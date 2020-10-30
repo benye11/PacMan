@@ -22,10 +22,10 @@ public class EnergizerPelletScript : MonoBehaviour
     // Update is called once per frame
     void OnTriggerEnter2D(Collider2D other) {
         if (other.gameObject.name == "PacMan") {
-            RedGhost.SendMessage("FrightMode");
-            PinkGhost.SendMessage("FrightMode");
-            CyanGhost.SendMessage("FrightMode");
-            OrangeGhost.SendMessage("FrightMode");
+            RedGhost.SendMessage("TriggerFright");
+            PinkGhost.SendMessage("TriggerFright");
+            CyanGhost.SendMessage("TriggerFright");
+            OrangeGhost.SendMessage("TriggerFright");
         }
     }
 }

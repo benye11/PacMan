@@ -15,7 +15,7 @@ public class RedScript : MonoBehaviour
     System.Random randomizer;
     private Animator anim;
     public GameObject Player;
-    Queue<NodeIntersectionScript> Path;
+    Stack<NodeIntersectionScript> Path;
     bool Fright;
     // Start is called before the first frame update
     void Start()
@@ -27,7 +27,7 @@ public class RedScript : MonoBehaviour
         transform.position = StartNode.transform.position; //this should fix things up
         LeftTeleport = GameObject.Find("pellet_left_teleport").GetComponent<NodeIntersectionScript>();
         RightTeleport = GameObject.Find("pellet_right_teleport").GetComponent<NodeIntersectionScript>();
-        Queue<NodeIntersectionScript> Path = new Queue<NodeIntersectionScript>();
+        Path = new Stack<NodeIntersectionScript>();
         Fright = false;
         CurrentNode = StartNode;
         Debug.Log("BLINKY START Node: " + CurrentNode.name);
@@ -111,55 +111,185 @@ public class RedScript : MonoBehaviour
     }
 
     void FrightMode() {
+        //Debug.Log("IN FRIGHT MODE");
         //Find a Path to HomeNode.
-        if (OverShotTarget()) {
-            if (Path.Count > 0) {
-            Path.Dequeue();
-            direction = (TargetNode.transform.position - CurrentNode.transform.position).normalized;
-            //transform.position = TargetNode.transform.position; //not necessary
-            CurrentNode = TargetNode;
-            TargetNode = Path.Peek();
+        if (Path.Count != 0 && OverShotTarget()) {
+            Debug.Log("[FRIGHTMODE]: OVERSHOT TARGET");
+            Debug.Log("DEQUEUED " + Path.Pop().name);
+            Debug.Log("[FRIGHTMODE] CurrentNode: " + CurrentNode.name);
+            if (TargetNode == null) {
+                Debug.Log("[FRIGHTMODE] TargetNode is null");
+                //this shouldn't happen.
             }
             else {
-                Fright = false;
+                //Debug.Log("TargetNode: " + TargetNode.name);
+                CurrentNode = TargetNode;
+                if (CurrentNode == LeftTeleport || CurrentNode == RightTeleport) {
+                    Teleport(CurrentNode);
+                }
+                if (Path.Count != 0) {
+                    TargetNode = Path.Peek();
+                    direction = (TargetNode.transform.position - CurrentNode.transform.position).normalized;
+                }
+                else if (Path.Count == 0) {
+                    //this should mean we are at HomeNode now. Then we can exit out of the house.
+                    TargetNode = CurrentNode.neighbors[0]; //top_middle
+                    direction = Vector2.up;
+                    Fright = false;
+                    anim.SetBool("FrightMode", false);
+                    anim.SetInteger("SpriteDirectionFacing", 0);
+                }
             }
         }
+        //Debug.Log("[FRIGHTMODE] Have not OverShot yet");
     }
 
     //player calls this
+    //NOTE: INITIALIZING A STACK WITH ANOTHER STACK ACTUALLY PUTS IT IN REVERSE ORDER.
     void TriggerFright() {
-        Queue<NodeIntersectionScript> Path = DepthFirstSearch(TargetNode);
         Fright = true;
+        anim.SetBool("FrightMode", true);
+        Debug.Log("Started with TargetNode: " + TargetNode.name);
+        Path = new Stack<NodeIntersectionScript>(BreadthFirstSearch(TargetNode));
+        int i = 0;
+        //Debug.Log("[TriggerFright] first node: " + Path.Peek().name);
+        foreach (NodeIntersectionScript Node in Path) {
+            if (Node == HomeNode) {
+                Debug.Log("#" + i.ToString() + ": This is HomeNode: " + Node.name);
+            }
+            else {
+                Debug.Log("#" + i.ToString() + ": Path Node for " + gameObject.name + ": " + Node.name);
+            }
+            i++;
+        }
     }
 
-    Queue<NodeIntersectionScript> BreadthFirstSearch(NodeIntersectionScript Node) {
+    Stack<NodeIntersectionScript> BreadthFirstSearch(NodeIntersectionScript Node) {
+        if (HomeNode == Node) {
+            return null;
+        }
+        //node, prevnode, stack.
+        Stack<NodeIntersectionScript> temp1 = new Stack<NodeIntersectionScript>();
+        temp1.Push(HomeNode);
+        Queue<(NodeIntersectionScript, NodeIntersectionScript, Stack<NodeIntersectionScript>)> TraversalQueue = new Queue<(NodeIntersectionScript, NodeIntersectionScript, Stack<NodeIntersectionScript>)>();
+        //HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>();
+        TraversalQueue.Enqueue((HomeNode, null, temp1));
+        while (TraversalQueue.Count > 0) {
+            (NodeIntersectionScript, NodeIntersectionScript, Stack<NodeIntersectionScript>) temp = TraversalQueue.Dequeue();
+            NodeIntersectionScript tempNode = temp.Item1;
+            NodeIntersectionScript prevNode = temp.Item2;
+            Stack<NodeIntersectionScript> currPath = new Stack<NodeIntersectionScript>(temp.Item3);
+            if (tempNode == Node) {
+                return currPath;
+            }
+            for (int i = 0; i < tempNode.neighbors.Length; i++) {
+                if (tempNode.neighbors[i] != prevNode) {
+                    Stack<NodeIntersectionScript> currPathNext = new Stack<NodeIntersectionScript>(currPath);
+                    currPathNext.Push(tempNode.neighbors[i]);
+                    TraversalQueue.Enqueue((tempNode.neighbors[i], tempNode, currPathNext));
+                }
+            }
+        }
+        Debug.Log("returning null");
         return null;
     }
 
-    Queue<NodeIntersectionScript> DepthFirstSearch(NodeIntersectionScript Node) {
+    Stack<NodeIntersectionScript> BreadthFirstSearchOld(NodeIntersectionScript Node) {
+        if (Node == HomeNode) {
+            return null;
+        }
+        //HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>();
+        //Stack<NodeIntersectionScript> TraversalStack = new Stack<NodeIntersectionScript>();
+        Queue<(NodeIntersectionScript, Stack<NodeIntersectionScript>, HashSet<NodeIntersectionScript>)> TraversalQueue = new Queue<(NodeIntersectionScript, Stack<NodeIntersectionScript>, HashSet<NodeIntersectionScript>)>();
+        TraversalQueue.Enqueue((HomeNode, new Stack<NodeIntersectionScript>(), new HashSet<NodeIntersectionScript>()));
+        while (TraversalQueue.Count > 0) {
+            (NodeIntersectionScript, Stack<NodeIntersectionScript>, HashSet<NodeIntersectionScript>) temp = TraversalQueue.Dequeue();
+            HashSet<NodeIntersectionScript> Visited = temp.Item3;
+            Debug.Log("Currently at: " + temp.Item1.name);
+            if (Visited.Contains(temp.Item1)) {
+                continue;
+            }
+            Stack<NodeIntersectionScript> TraversalStack = temp.Item2;
+            if (temp.Item1 == Node) {
+                TraversalStack.Push(Node);
+                return TraversalStack;
+            }
+            Visited.Add(temp.Item1);
+            TraversalStack.Push(temp.Item1); //we pop. then say we have visited node.
+            NodeIntersectionScript[] Neighbors = temp.Item1.neighbors;
+            for (int i = 0; i < Neighbors.Length; i++) {
+                Debug.Log(temp.Item1.name +  "'s neighbors: " + Neighbors[i].name);
+                if (Visited.Contains(Neighbors[i]) == false) {
+                    if (Neighbors[i] == Node) {
+                        TraversalStack.Push(Node);
+                        return TraversalStack;
+                    }
+                    //Stack<NodeIntersectionScript> TempStack = TraversalStack;
+                    //TempStack.Push(Neighbors[i]);
+                    //OHHHHH. It's because we start at house, then there's 3 things to add.
+                    //but when we add,
+                    TraversalQueue.Enqueue((Neighbors[i], TraversalStack, Visited));
+                }
+            }
+        }
+        return null;
+    }
+
+    Stack<NodeIntersectionScript> DepthFirstSearchOld(NodeIntersectionScript Node) {
         HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>();
-        Stack<(NodeIntersectionScript, Queue<NodeIntersectionScript>)> TraversalStack = new Stack<(NodeIntersectionScript, Queue<NodeIntersectionScript>)>();
+        Stack<NodeIntersectionScript> TraversalStack = new Stack<NodeIntersectionScript>();
         //Queue<NodeIntersectionScript> NodePath = new Queue<NodeIntersectionScript>();
-        TraversalStack.Push((Node, new Queue<NodeIntersectionScript>()));
+        TraversalStack.Push(HomeNode);
         while (TraversalStack.Count != 0) {
-             (NodeIntersectionScript,Queue<NodeIntersectionScript>) temp = TraversalStack.Pop();
-             if (Visited.Contains(temp.Item1)) {
-                 continue;
+            Debug.Log("DFS WHILE LOOP");
+             NodeIntersectionScript temp = TraversalStack.Pop();
+             if (!Visited.Contains(temp)) {
+                Visited.Add(temp);
+                //Debug.Log(temp.name + "'s neighbor count: " + temp.neighbors.Length.ToString());
+                for (int i = 0; i < temp.neighbors.Length; i++) {
+                    //It must overshootTarget first.
+                    //Debug.Log("Pushing " + temp.neighbors[i].name);
+                    if (!Visited.Contains(temp.neighbors[i])) {
+                        TraversalStack.Push(temp.neighbors[i]);
+                    }
+                }
+                 //Debug.Log("in visited");
              }
-             if (temp.Item1 == HomeNode) {
-                 return temp.Item2;
-             }
-             else {
-                 for (int i = 0; i < temp.Item1.neighbors.Length; i++) {
-                //It must overshootTarget first.
-                Queue<NodeIntersectionScript> NodePath = temp.Item2;
-                NodePath.Enqueue(temp.Item1.neighbors[i]);
-                TraversalStack.Push((temp.Item1.neighbors[i], NodePath));
-                Visited.Add(temp.Item1.neighbors[i]);
+             if (temp == Node) {
+                 //Debug.Log("temp == Node");
+                 return TraversalStack;
+            }
         }
-             }
-        }
-        return new Queue<NodeIntersectionScript>();
+        Debug.Log("DFS return empty stack");
+        return new Stack<NodeIntersectionScript>();
+    }
+
+    Stack<NodeIntersectionScript> DepthFirstSearch(NodeIntersectionScript Node) {
+    /*
+        def dfs(graph, start, goal):
+    visited = []
+    path = []
+    fringe = PriorityQueue()
+    fringe.put((0, start, path, visited))
+
+    while not fringe.empty():
+        depth, current_node, path, visited = fringe.get()
+
+        if current_node == goal:
+            return path + [current_node]
+
+        visited = visited + [current_node]
+
+        child_nodes = graph[current_node]
+        for node in child_nodes:
+            if node not in visited:
+                if node == goal:
+                    return path + [node]
+                depth_of_node = len(path)
+                fringe.put((-depth_of_node, node, path + [node], visited))
+
+    return path*/
+        return null;
     }
 
     string LogOutPut(Vector2 vector) {

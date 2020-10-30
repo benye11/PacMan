@@ -79,10 +79,10 @@ public class PacManScript : MonoBehaviour
         if (TargetNode != CurrentNode && TargetNode != null) {
             if (OverShotTarget()) {
                 //unlock our Lock.
-                Debug.Log("Current Node: " + CurrentNode.name);
-                Debug.Log("Hit Target Node " + TargetNode.name);
+                //Debug.Log("Current Node: " + CurrentNode.name);
+                //Debug.Log("Hit Target Node " + TargetNode.name);
                 CurrentNode = TargetNode;
-                Debug.Log("New current Node: " + CurrentNode.name);
+                //Debug.Log("New current Node: " + CurrentNode.name);
                 transform.localPosition = CurrentNode.transform.position;
                 if (CurrentNode == LeftTeleport || CurrentNode == RightTeleport) {
                     Teleport(CurrentNode);
@@ -102,7 +102,7 @@ public class PacManScript : MonoBehaviour
                         TargetNode = null;
                     }
                     else {
-                        Debug.Log("New Target Node");
+                        //Debug.Log("New Target Node");
                         TargetNode = moveToNode;
                     }
                 }
@@ -208,22 +208,22 @@ public class PacManScript : MonoBehaviour
         if (vector == Vector2.up) {
             transform.localScale = new Vector3(1,1,1);
             transform.localRotation = Quaternion.Euler(0, 0, 90);
-            Debug.Log("change orientation to be up");
+            //Debug.Log("change orientation to be up");
         }
         else if (vector == Vector2.down) {
             transform.localScale = new Vector3(1,1,1);
             transform.localRotation = Quaternion.Euler(0, 0, 270);
-            Debug.Log("change orientation to be down");
+            //Debug.Log("change orientation to be down");
         }
         else if (vector == Vector2.left) {
             transform.localScale = new Vector3(-1,1,1);
             transform.localRotation = Quaternion.Euler(0, 0, 0);
-            Debug.Log("change orientation to be left");
+            //Debug.Log("change orientation to be left");
         }
         else if (vector == Vector2.right) {
             transform.localScale = new Vector3(1,1,1);
             transform.localRotation = Quaternion.Euler(0, 0, 0);
-            Debug.Log("change orientation to be right");
+            //Debug.Log("change orientation to be right");
         }
     }
 
