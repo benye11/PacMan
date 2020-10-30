@@ -105,7 +105,8 @@ public class RedScript : MonoBehaviour
     }
 
     void OnTriggerEnter2D(Collider2D other) {
-        if (other.tag == "Player") {
+        //check for fright might not be necessary since we turn off collider
+        if (other.tag == "Player" && Fright == true) {
             Player.SendMessage("TriggerDeath");
         }
     }
@@ -119,7 +120,8 @@ public class RedScript : MonoBehaviour
             Debug.Log("[FRIGHTMODE] CurrentNode: " + CurrentNode.name);
             if (TargetNode == null) {
                 Debug.Log("[FRIGHTMODE] TargetNode is null");
-                //this shouldn't happen.
+                //this means we're already at HomeNode.
+                //this shouldn't happen. There should always be a targetNode
             }
             else {
                 //Debug.Log("TargetNode: " + TargetNode.name);
@@ -138,6 +140,7 @@ public class RedScript : MonoBehaviour
                     Fright = false;
                     anim.SetBool("FrightMode", false);
                     anim.SetInteger("SpriteDirectionFacing", 0);
+                    GetComponent<Collider2D>().enabled = true;
                 }
             }
         }
@@ -149,6 +152,7 @@ public class RedScript : MonoBehaviour
     void TriggerFright() {
         Fright = true;
         anim.SetBool("FrightMode", true);
+        GetComponent<Collider2D>().enabled = false;
         Debug.Log("Started with TargetNode: " + TargetNode.name);
         Path = new Stack<NodeIntersectionScript>(BreadthFirstSearch(TargetNode));
         int i = 0;
@@ -164,6 +168,7 @@ public class RedScript : MonoBehaviour
         }
     }
 
+    //working. Use this for scatter and AI behavior
     Stack<NodeIntersectionScript> BreadthFirstSearch(NodeIntersectionScript Node) {
         if (HomeNode == Node) {
             return null;
@@ -194,8 +199,9 @@ public class RedScript : MonoBehaviour
         return null;
     }
 
-    Stack<NodeIntersectionScript> BreadthFirstSearchOld(NodeIntersectionScript Node) {
-        if (Node == HomeNode) {
+    //use this for AI behavior
+    Stack<NodeIntersectionScript> DepthFirstSearch(NodeIntersectionScript Node) {
+        if (Node == TargetNode) { //check this.
             return null;
         }
         //HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>();
@@ -204,12 +210,12 @@ public class RedScript : MonoBehaviour
         TraversalQueue.Enqueue((HomeNode, new Stack<NodeIntersectionScript>(), new HashSet<NodeIntersectionScript>()));
         while (TraversalQueue.Count > 0) {
             (NodeIntersectionScript, Stack<NodeIntersectionScript>, HashSet<NodeIntersectionScript>) temp = TraversalQueue.Dequeue();
-            HashSet<NodeIntersectionScript> Visited = temp.Item3;
+            HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>(temp.Item3);
             Debug.Log("Currently at: " + temp.Item1.name);
             if (Visited.Contains(temp.Item1)) {
                 continue;
             }
-            Stack<NodeIntersectionScript> TraversalStack = temp.Item2;
+            Stack<NodeIntersectionScript> TraversalStack = new Stack<NodeIntersectionScript>(temp.Item2); //flipped.
             if (temp.Item1 == Node) {
                 TraversalStack.Push(Node);
                 return TraversalStack;
@@ -221,74 +227,16 @@ public class RedScript : MonoBehaviour
                 Debug.Log(temp.Item1.name +  "'s neighbors: " + Neighbors[i].name);
                 if (Visited.Contains(Neighbors[i]) == false) {
                     if (Neighbors[i] == Node) {
-                        TraversalStack.Push(Node);
-                        return TraversalStack;
+                        Stack<NodeIntersectionScript> FinalStack = new Stack<NodeIntersectionScript>(TraversalStack); //re-flip.
+                        FinalStack.Push(Node);
+                        return FinalStack;
                     }
-                    //Stack<NodeIntersectionScript> TempStack = TraversalStack;
-                    //TempStack.Push(Neighbors[i]);
-                    //OHHHHH. It's because we start at house, then there's 3 things to add.
-                    //but when we add,
-                    TraversalQueue.Enqueue((Neighbors[i], TraversalStack, Visited));
+                    Stack<NodeIntersectionScript> TempStack = new Stack<NodeIntersectionScript>(TraversalStack); //re-flip.
+                    TempStack.Push(Neighbors[i]);
+                    TraversalQueue.Enqueue((Neighbors[i], TempStack, Visited));
                 }
             }
         }
-        return null;
-    }
-
-    Stack<NodeIntersectionScript> DepthFirstSearchOld(NodeIntersectionScript Node) {
-        HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>();
-        Stack<NodeIntersectionScript> TraversalStack = new Stack<NodeIntersectionScript>();
-        //Queue<NodeIntersectionScript> NodePath = new Queue<NodeIntersectionScript>();
-        TraversalStack.Push(HomeNode);
-        while (TraversalStack.Count != 0) {
-            Debug.Log("DFS WHILE LOOP");
-             NodeIntersectionScript temp = TraversalStack.Pop();
-             if (!Visited.Contains(temp)) {
-                Visited.Add(temp);
-                //Debug.Log(temp.name + "'s neighbor count: " + temp.neighbors.Length.ToString());
-                for (int i = 0; i < temp.neighbors.Length; i++) {
-                    //It must overshootTarget first.
-                    //Debug.Log("Pushing " + temp.neighbors[i].name);
-                    if (!Visited.Contains(temp.neighbors[i])) {
-                        TraversalStack.Push(temp.neighbors[i]);
-                    }
-                }
-                 //Debug.Log("in visited");
-             }
-             if (temp == Node) {
-                 //Debug.Log("temp == Node");
-                 return TraversalStack;
-            }
-        }
-        Debug.Log("DFS return empty stack");
-        return new Stack<NodeIntersectionScript>();
-    }
-
-    Stack<NodeIntersectionScript> DepthFirstSearch(NodeIntersectionScript Node) {
-    /*
-        def dfs(graph, start, goal):
-    visited = []
-    path = []
-    fringe = PriorityQueue()
-    fringe.put((0, start, path, visited))
-
-    while not fringe.empty():
-        depth, current_node, path, visited = fringe.get()
-
-        if current_node == goal:
-            return path + [current_node]
-
-        visited = visited + [current_node]
-
-        child_nodes = graph[current_node]
-        for node in child_nodes:
-            if node not in visited:
-                if node == goal:
-                    return path + [node]
-                depth_of_node = len(path)
-                fringe.put((-depth_of_node, node, path + [node], visited))
-
-    return path*/
         return null;
     }
 
