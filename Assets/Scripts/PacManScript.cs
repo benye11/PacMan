@@ -29,7 +29,7 @@ public class PacManScript : MonoBehaviour
     private string oppositeDirectionOutput;
     private int score;
     public Text ScoreBoard;
-    private Animator anim;
+    public Animator anim;
     private NodeIntersectionScript LeftTeleport;
     private NodeIntersectionScript RightTeleport;
     void Start()
