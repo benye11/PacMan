@@ -17,7 +17,7 @@ using UnityEngine.UI;
 public class PacManScript : MonoBehaviour
 {
     //We want to keep track of CurrentNode, TargetNode, and PreviousNode.
-    //
+    //public GUISkin skin;
     public float speed = 4.0f;
     private Vector2 direction;
     private Vector2 oppositeDirection;
@@ -34,6 +34,9 @@ public class PacManScript : MonoBehaviour
     private NodeIntersectionScript RightTeleport;
     void Start()
     {
+        //skin = Resources.Load<GUISkin>("Fonts/EmulogicGUISkin");
+        //GUI.skin = skin;
+        //GUILayout.Button ("I am a re-Skinned Button");
         anim = GetComponent<Animator>();
         ScoreBoard.text = "Score: 0";
         score = 0;
@@ -278,5 +281,6 @@ public class PacManScript : MonoBehaviour
             GetComponent<Collider2D>().enabled = true;
             //anim.enabled = true;
     }
+    
 
 }

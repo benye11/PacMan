@@ -130,6 +130,31 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!1101 &-6267774947115582614
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 2
+    m_ConditionEvent: FlashMode
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 23914618011711394}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0
+  m_TransitionOffset: 0
+  m_ExitTime: 0.516129
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1102 &-6098032593987581122
 AnimatorState:
   serializedVersion: 5
@@ -137,7 +162,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PinkRight
+  m_Name: OrangeRight
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -154,7 +179,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: a15f820a11bdc47fcb2fd49bd10aeec4, type: 2}
+  m_Motion: {fileID: 7400000, guid: 7f0348e8f4d914f08a7bc5e53b6e13f8, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -421,6 +446,31 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1101 &-2191513718070356479
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 2
+    m_ConditionEvent: FrightMode
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 23914618011711394}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0
+  m_TransitionOffset: 0
+  m_ExitTime: 0.28571433
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &-1977377824086431271
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -504,7 +554,7 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 1
+  - m_ConditionMode: 2
     m_ConditionEvent: Eaten
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
@@ -577,7 +627,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PinkAnimation
+  m_Name: OrangeAnimation
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: SpriteDirectionFacing
@@ -624,7 +674,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PinkUp
+  m_Name: OrangeUp
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -641,7 +691,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 1f7d835b2a402404f8a66a4fe1cc8c0d, type: 2}
+  m_Motion: {fileID: 7400000, guid: 7ff6fe2fac9c3409c8f42d02555d1fba, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -729,7 +779,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PinkLeft
+  m_Name: OrangeLeft
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -746,7 +796,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 9f38857f1d4ca40a59e9cb2569cc3075, type: 2}
+  m_Motion: {fileID: 7400000, guid: 7d44a208427c84b729a0bdb75f99a408, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -859,7 +909,7 @@ AnimatorStateMachine:
     m_Position: {x: 50, y: 350, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 3555531153200522708}
-    m_Position: {x: 70, y: 570, z: 0}
+    m_Position: {x: 110, y: 600, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -7012250349670070387}
     m_Position: {x: 560, y: 430, z: 0}
@@ -881,7 +931,7 @@ AnimatorStateMachine:
   m_EntryPosition: {x: 10, y: 120, z: 0}
   m_ExitPosition: {x: 800, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: 4780946880129341022}
+  m_DefaultState: {fileID: 23914618011711394}
 --- !u!1101 &1928746101698034179
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -1000,6 +1050,7 @@ AnimatorState:
   - {fileID: 2045801506821806284}
   - {fileID: -5745247539374851871}
   - {fileID: 8832898140948077677}
+  - {fileID: -6267774947115582614}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -1097,7 +1148,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PinkDown
+  m_Name: OrangeDown
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -1114,7 +1165,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: e086a4a16eaa24e2d9cad22219b16796, type: 2}
+  m_Motion: {fileID: 7400000, guid: 8ecb87961a58645589311aa1d2121ea1, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -1211,6 +1262,7 @@ AnimatorState:
   - {fileID: -5681656336295533770}
   - {fileID: 3735723095938190625}
   - {fileID: 837846148082082717}
+  - {fileID: -2191513718070356479}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0

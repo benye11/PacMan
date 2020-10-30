@@ -38,6 +38,7 @@ public class RedScript : MonoBehaviour
         CurrentNode = StartNode;
         Debug.Log("BLINKY START Node: " + CurrentNode.name);
         SetBehavior();
+        Debug.Log("Current ghost: " + gameObject.name + " and behavior: " + behavior.ToString());
         //SelectRandomTargetNode();
     }
 
@@ -77,7 +78,7 @@ public class RedScript : MonoBehaviour
             if (Path.Count != 0 && OverShotTarget()) {
                 Path.Pop();
                 if (TargetNode == null) {
-                    //Debug.Log("[NORMALMODE BEHAVIOR 0] TargetNode is null ");
+                    Debug.Log("[NORMALMODE BEHAVIOR 0] TargetNode is null ");
                 }
                 else {
                 CurrentNode = TargetNode;
@@ -111,7 +112,7 @@ public class RedScript : MonoBehaviour
             if (Path.Count != 0 && OverShotTarget()) {
                 Path.Pop();
                 if (TargetNode == null) {
-                    //Debug.Log("[NORMALMODE BEHAVIOR 1] TargetNode is null ");
+                    Debug.Log("[NORMALMODE BEHAVIOR 1] TargetNode is null ");
                 }
                 else  {
                 CurrentNode = TargetNode;
@@ -217,8 +218,15 @@ public class RedScript : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other) {
         //check for fright might not be necessary since we turn off collider
-        if (other.tag == "Player" && Fright == false) {
+        if (other.tag == "Player") {
+            if (Fright == false) {
             Player.SendMessage("TriggerDeath");
+            }
+            else if (Fright == true) {
+                Player.SendMessage("ScorePoints", 100);
+                GetComponent<Collider2D>().enabled = false;
+                anim.SetBool("Eaten", true);
+            }
         }
     }
 
@@ -251,6 +259,7 @@ public class RedScript : MonoBehaviour
                     direction = Vector2.up;
                     Fright = false;
                     anim.SetBool("FrightMode", false);
+                    anim.SetBool("Eaten", false);
                     anim.SetInteger("SpriteDirectionFacing", 0);
                     GetComponent<Collider2D>().enabled = true;
                     if (behavior == 0) {
@@ -270,7 +279,7 @@ public class RedScript : MonoBehaviour
     void TriggerFright() {
         Fright = true;
         anim.SetBool("FrightMode", true);
-        GetComponent<Collider2D>().enabled = false;
+        //GetComponent<Collider2D>().enabled = false;
         Debug.Log("Started with TargetNode: " + TargetNode.name);
         FrightPath = new Stack<NodeIntersectionScript>(BreadthFirstSearch(TargetNode, HomeNode));
         if (FrightPath == null) {
