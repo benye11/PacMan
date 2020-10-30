@@ -22,8 +22,8 @@ public class PacManScript : MonoBehaviour
     private Vector2 direction;
     private Vector2 oppositeDirection;
     public NodeIntersectionScript StartNode;
-    private NodeIntersectionScript CurrentNode;
-    private NodeIntersectionScript TargetNode;
+    public NodeIntersectionScript CurrentNode;
+    public NodeIntersectionScript TargetNode;
     private Vector2[] AvailableDirections;
     private Vector2 nextDirection; //you can make input directions in advance.
     private string oppositeDirectionOutput;

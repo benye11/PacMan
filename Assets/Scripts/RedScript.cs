@@ -12,26 +12,33 @@ public class RedScript : MonoBehaviour
     private NodeIntersectionScript CurrentNode;
     private NodeIntersectionScript TargetNode;
     public NodeIntersectionScript HomeNode; //this is the Node we go back to after being a ghost.
+    public NodeIntersectionScript CornerNode;
     System.Random randomizer;
     private Animator anim;
     public GameObject Player;
-    Stack<NodeIntersectionScript> Path;
+    private Stack<NodeIntersectionScript> FrightPath;
+    private Stack<NodeIntersectionScript> Path;
+    private PacManScript PacManAttributes;
     bool Fright;
+    private int behavior;
     // Start is called before the first frame update
     void Start()
     {
+        //behavior = 3; // for now
         //NOTE: board will be null if we add BlinkyScript to our script order of execution under project settings
         randomizer = new System.Random();
         anim = GetComponent<Animator>();
         Player = GameObject.FindWithTag("Player");
+        PacManAttributes = GameObject.FindWithTag("Player").GetComponent<PacManScript>();
         transform.position = StartNode.transform.position; //this should fix things up
         LeftTeleport = GameObject.Find("pellet_left_teleport").GetComponent<NodeIntersectionScript>();
         RightTeleport = GameObject.Find("pellet_right_teleport").GetComponent<NodeIntersectionScript>();
-        Path = new Stack<NodeIntersectionScript>();
+        FrightPath = new Stack<NodeIntersectionScript>();
         Fright = false;
         CurrentNode = StartNode;
         Debug.Log("BLINKY START Node: " + CurrentNode.name);
-        SelectRandomTargetNode();
+        SetBehavior();
+        //SelectRandomTargetNode();
     }
 
     // Update is called once per frame
@@ -47,13 +54,98 @@ public class RedScript : MonoBehaviour
     }
 
     void NormalMode() {
-        if (OverShotTarget()) {
+        if (behavior == 0) {
+            //BFS follow.
+            if (Path.Count != 0 && OverShotTarget()) {
+                Path.Pop();
+                if (TargetNode == null) {
+                    Debug.Log("[NORMALMODE BEHAVIOR 0] TargetNode is null ");
+                }
+                else {
+                CurrentNode = TargetNode;
+                if (CurrentNode == LeftTeleport || CurrentNode == RightTeleport) {
+                    Teleport(CurrentNode);
+                }
+                if (Path.Count != 0) {
+                    TargetNode = Path.Peek();
+                    direction = (TargetNode.transform.position - CurrentNode.transform.position).normalized;
+                }
+                else if (Path.Count == 0) {
+                    NodeIntersectionScript GoalNode = PacManAttributes.TargetNode;
+                    if (GoalNode == null) {
+                        GoalNode = PacManAttributes.CurrentNode;
+                    }
+
+                    if (GoalNode == null) {
+                        SelectRandomTargetNode();
+                        Path = BreadthFirstSearch(CornerNode, TargetNode);
+                    }
+                    else {
+                        SelectRandomTargetNode();
+                        Path = BreadthFirstSearch(GoalNode, TargetNode); 
+                    }      
+                }
+                }
+            }
+        }
+        else if (behavior == 1) {
+            //DFS
+            if (Path.Count != 0 && OverShotTarget()) {
+                Path.Pop();
+                if (TargetNode == null) {
+                    Debug.Log("[NORMALMODE BEHAVIOR 1] TargetNode is null ");
+                }
+                else  {
+                CurrentNode = TargetNode;
+                if (CurrentNode == LeftTeleport || CurrentNode == RightTeleport) {
+                    Teleport(CurrentNode);
+                }
+                if (Path.Count != 0) {
+                    TargetNode = Path.Peek();
+                    direction = (TargetNode.transform.position - CurrentNode.transform.position).normalized;
+                }
+                else if (Path.Count == 0) {
+                    NodeIntersectionScript GoalNode = PacManAttributes.TargetNode;
+                    if (GoalNode == null) {
+                        GoalNode = PacManAttributes.CurrentNode;
+                    }
+                    if (GoalNode == null) {
+                        SelectRandomTargetNode();
+                        Path = new Stack<NodeIntersectionScript>(DepthFirstSearch(PacManAttributes.CurrentNode, TargetNode));
+                        //Path = DepthFirstSearch(CornerNode, TargetNode); 
+                    }
+                    else {
+                        SelectRandomTargetNode();
+                        Path = new Stack<NodeIntersectionScript>(DepthFirstSearch(PacManAttributes.CurrentNode, TargetNode));
+                        //Path = DepthFirstSearch(GoalNode, TargetNode); 
+                    }
+                }
+                }
+            }
+        }
+        else if (behavior == 2) {
+            //randomize for now
+            //BFS if >= 8 tiles from PacMan. then scatter if within 4 tiles of PacMan.
+            if (OverShotTarget()) {
             CurrentNode = TargetNode;
             if (CurrentNode == LeftTeleport || CurrentNode == RightTeleport) {
                 Teleport(CurrentNode);
             }
             else {
                 SelectRandomTargetNode();
+            }
+            }
+        }
+        else if (behavior == 3) {
+            //Random.
+            if (OverShotTarget()) {
+            CurrentNode = TargetNode;
+            if (CurrentNode == LeftTeleport || CurrentNode == RightTeleport) {
+                Teleport(CurrentNode);
+            }
+            else {
+                SelectRandomTargetNode();
+            }
             }
         }
     }
@@ -106,7 +198,7 @@ public class RedScript : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other) {
         //check for fright might not be necessary since we turn off collider
-        if (other.tag == "Player" && Fright == true) {
+        if (other.tag == "Player" && Fright == false) {
             Player.SendMessage("TriggerDeath");
         }
     }
@@ -114,9 +206,9 @@ public class RedScript : MonoBehaviour
     void FrightMode() {
         //Debug.Log("IN FRIGHT MODE");
         //Find a Path to HomeNode.
-        if (Path.Count != 0 && OverShotTarget()) {
+        if (FrightPath.Count != 0 && OverShotTarget()) {
             Debug.Log("[FRIGHTMODE]: OVERSHOT TARGET");
-            Debug.Log("DEQUEUED " + Path.Pop().name);
+            Debug.Log("DEQUEUED " + FrightPath.Pop().name);
             Debug.Log("[FRIGHTMODE] CurrentNode: " + CurrentNode.name);
             if (TargetNode == null) {
                 Debug.Log("[FRIGHTMODE] TargetNode is null");
@@ -129,11 +221,11 @@ public class RedScript : MonoBehaviour
                 if (CurrentNode == LeftTeleport || CurrentNode == RightTeleport) {
                     Teleport(CurrentNode);
                 }
-                if (Path.Count != 0) {
+                if (FrightPath.Count != 0) {
                     TargetNode = Path.Peek();
                     direction = (TargetNode.transform.position - CurrentNode.transform.position).normalized;
                 }
-                else if (Path.Count == 0) {
+                else if (FrightPath.Count == 0) {
                     //this should mean we are at HomeNode now. Then we can exit out of the house.
                     TargetNode = CurrentNode.neighbors[0]; //top_middle
                     direction = Vector2.up;
@@ -154,10 +246,10 @@ public class RedScript : MonoBehaviour
         anim.SetBool("FrightMode", true);
         GetComponent<Collider2D>().enabled = false;
         Debug.Log("Started with TargetNode: " + TargetNode.name);
-        Path = new Stack<NodeIntersectionScript>(BreadthFirstSearch(TargetNode));
+        FrightPath = new Stack<NodeIntersectionScript>(BreadthFirstSearch(TargetNode, HomeNode));
         int i = 0;
         //Debug.Log("[TriggerFright] first node: " + Path.Peek().name);
-        foreach (NodeIntersectionScript Node in Path) {
+        foreach (NodeIntersectionScript Node in FrightPath) {
             if (Node == HomeNode) {
                 Debug.Log("#" + i.ToString() + ": This is HomeNode: " + Node.name);
             }
@@ -169,16 +261,18 @@ public class RedScript : MonoBehaviour
     }
 
     //working. Use this for scatter and AI behavior
-    Stack<NodeIntersectionScript> BreadthFirstSearch(NodeIntersectionScript Node) {
-        if (HomeNode == Node) {
+    //Node is what u r trying to get to. BaseNode is where u start from.
+    //NOTE: it returns a flipped stack. so top is BaseNode, last of stack is Node.
+    Stack<NodeIntersectionScript> BreadthFirstSearch(NodeIntersectionScript Node , NodeIntersectionScript BaseNode) {
+        if (BaseNode == Node) {
             return null;
         }
         //node, prevnode, stack.
         Stack<NodeIntersectionScript> temp1 = new Stack<NodeIntersectionScript>();
-        temp1.Push(HomeNode);
+        temp1.Push(BaseNode);
         Queue<(NodeIntersectionScript, NodeIntersectionScript, Stack<NodeIntersectionScript>)> TraversalQueue = new Queue<(NodeIntersectionScript, NodeIntersectionScript, Stack<NodeIntersectionScript>)>();
         //HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>();
-        TraversalQueue.Enqueue((HomeNode, null, temp1));
+        TraversalQueue.Enqueue((BaseNode, null, temp1));
         while (TraversalQueue.Count > 0) {
             (NodeIntersectionScript, NodeIntersectionScript, Stack<NodeIntersectionScript>) temp = TraversalQueue.Dequeue();
             NodeIntersectionScript tempNode = temp.Item1;
@@ -199,29 +293,27 @@ public class RedScript : MonoBehaviour
         return null;
     }
 
-    //use this for AI behavior
-    Stack<NodeIntersectionScript> DepthFirstSearch(NodeIntersectionScript Node) {
-        if (Node == TargetNode) { //check this.
+    //use this for AI behavior. this should return flipped. so Node is last on stack, top is Current Starting Node.
+    //not sure if DFS works
+    Stack<NodeIntersectionScript> DepthFirstSearch(NodeIntersectionScript Node, NodeIntersectionScript BaseNode) {
+        if (Node == TargetNode) { //this means the Node that PacMan is trying to go to, we are also heading that direction.
             return null;
         }
         //HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>();
-        //Stack<NodeIntersectionScript> TraversalStack = new Stack<NodeIntersectionScript>();
+        Stack<NodeIntersectionScript> temp1 = new Stack<NodeIntersectionScript>();
+        temp1.Push(BaseNode);
         Queue<(NodeIntersectionScript, Stack<NodeIntersectionScript>, HashSet<NodeIntersectionScript>)> TraversalQueue = new Queue<(NodeIntersectionScript, Stack<NodeIntersectionScript>, HashSet<NodeIntersectionScript>)>();
-        TraversalQueue.Enqueue((HomeNode, new Stack<NodeIntersectionScript>(), new HashSet<NodeIntersectionScript>()));
+        TraversalQueue.Enqueue((BaseNode, temp1, new HashSet<NodeIntersectionScript>()));
         while (TraversalQueue.Count > 0) {
             (NodeIntersectionScript, Stack<NodeIntersectionScript>, HashSet<NodeIntersectionScript>) temp = TraversalQueue.Dequeue();
             HashSet<NodeIntersectionScript> Visited = new HashSet<NodeIntersectionScript>(temp.Item3);
-            Debug.Log("Currently at: " + temp.Item1.name);
-            if (Visited.Contains(temp.Item1)) {
-                continue;
-            }
             Stack<NodeIntersectionScript> TraversalStack = new Stack<NodeIntersectionScript>(temp.Item2); //flipped.
-            if (temp.Item1 == Node) {
-                TraversalStack.Push(Node);
+            NodeIntersectionScript tempNode = temp.Item1;
+            Visited.Add(temp.Item1);
+            if(tempNode == Node) {
                 return TraversalStack;
             }
-            Visited.Add(temp.Item1);
-            TraversalStack.Push(temp.Item1); //we pop. then say we have visited node.
+            Debug.Log("Currently at: " + temp.Item1.name);
             NodeIntersectionScript[] Neighbors = temp.Item1.neighbors;
             for (int i = 0; i < Neighbors.Length; i++) {
                 Debug.Log(temp.Item1.name +  "'s neighbors: " + Neighbors[i].name);
@@ -238,6 +330,39 @@ public class RedScript : MonoBehaviour
             }
         }
         return null;
+    }
+
+//--------------------------------------------------------------------AI BEHAVIOR--------------------------------------------------------------------//
+
+    //sets behavior depending on ghost
+    void SetBehavior() {
+        string name = gameObject.name;
+        switch (name) {
+            case "RedGhost":
+                behavior = 0; //BFS follow
+                SelectRandomTargetNode();
+                //Path = new Stack<NodeIntersectionScript>(BreadthFirstSearch(PacManAttributes.CurrentNode, TargetNode));
+                Path = BreadthFirstSearch(PacManAttributes.CurrentNode, TargetNode); 
+                break;
+            case "PinkGhost":
+                behavior = 1; //DFS follow
+                SelectRandomTargetNode();
+                Path = new Stack<NodeIntersectionScript>(DepthFirstSearch(PacManAttributes.CurrentNode, TargetNode));
+                //Path = DepthFirstSearch(PacManAttributes.CurrentNode, TargetNode); 
+                break;
+            case "OrangeGhost":
+                behavior = 2; //BFS follow until in range. of pacman. then call scatter. Then repeat.
+                SelectRandomTargetNode();
+                break;
+            case "CyanGhost":
+                behavior = 3; //Random.
+                SelectRandomTargetNode();
+                break;
+        }
+    }
+    //each ghost goes to their respective corners
+    void Scatter() {
+        Path = BreadthFirstSearch(CornerNode, TargetNode);
     }
 
     string LogOutPut(Vector2 vector) {
