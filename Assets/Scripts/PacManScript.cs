@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 
 //currentNode, MoveToNode.
@@ -30,17 +31,30 @@ public class PacManScript : MonoBehaviour
     private int score;
     private int highscore;
     public Text CurrentScore;
+    public Text Lives;
+    private int lives;
     public Animator anim;
     private NodeIntersectionScript LeftTeleport;
     private NodeIntersectionScript RightTeleport;
     private int pelletcount;
     public GameManager gameManager;
+    public GameObject GameOverObject;
     void Start()
     {
         //skin = Resources.Load<GUISkin>("Fonts/EmulogicGUISkin");
         //GUI.skin = skin;
         //GUILayout.Button ("I am a re-Skinned Button");
         gameManager = GameObject.FindObjectOfType<GameManager>();
+        if (StoreValues.level < 5) {
+            lives = 3;
+        }
+        else if (StoreValues.level > 10) {
+            lives = 1;
+        }
+        else if (StoreValues.level > 5) {
+            lives = 2;
+        }
+        Lives.text = "Lives\n" + lives.ToString() + "UP";
         anim = GetComponent<Animator>();
         pelletcount = 0;
         CurrentScore.text = "Current Score" + "\n" + "0";
@@ -83,6 +97,15 @@ public class PacManScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     { 
+        if (GameOverObject.activeInHierarchy == true) {
+            if (Input.GetKeyDown("y")) {
+                gameManager.SendMessage("RestartGame");
+                SceneManager.LoadScene("SampleScene");
+            }
+            else if (Input.GetKeyDown("n")) {
+                Application.Quit();
+            }
+        }
         Move();
         if (TargetNode != CurrentNode && TargetNode != null) {
             if (OverShotTarget()) {
@@ -147,7 +170,7 @@ public class PacManScript : MonoBehaviour
         pelletcount += 1;
         //Debug.Log("pelletcount: " + pelletcount.ToString()); //we have 233 pellets.
         if (pelletcount >= 233) {
-
+            StartNewLevel(); //test
         }
     }
 
@@ -272,6 +295,8 @@ public class PacManScript : MonoBehaviour
     }
 
     void TriggerDeath() {
+        lives -= 1;
+        Lives.text = "Lives\n" + lives.ToString() + "UP";
         direction = Vector2.zero;
         oppositeDirection = Vector2.zero;
         anim.SetBool("DeathTrigger", true);
@@ -282,6 +307,9 @@ public class PacManScript : MonoBehaviour
         anim.SetBool("DeathTrigger", false);
         GetComponent<SpriteRenderer>().enabled = false;
         GetComponent<Collider2D>().enabled = false;
+        if (lives == 0) {
+            GameOver();
+        }
         Invoke("Respawn", 1.5f);
     }
 
@@ -298,6 +326,17 @@ public class PacManScript : MonoBehaviour
             GetComponent<Collider2D>().enabled = true;
             //anim.enabled = true;
     }
+
+    void StartNewLevel() {
+        gameManager.SendMessage("StartLevel");
+        SceneManager.LoadScene("SampleScene");
+    }
     
+    void GameOver() {
+        CancelInvoke(); //cancel all invoke statements and respawn
+        GameOverObject.SetActive(true);
+        CurrentScore.enabled = false;
+        Lives.enabled = false;
+    }
 
 }

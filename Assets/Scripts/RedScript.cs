@@ -21,6 +21,11 @@ public class RedScript : MonoBehaviour
     private PacManScript PacManAttributes;
     bool Fright;
     private int behavior;
+    public GameManager gameManager;
+    private float ChaseTime;
+    private float timer;
+    private bool chasing;
+    private bool reached;
     // Start is called before the first frame update
     void Start()
     {
@@ -28,6 +33,12 @@ public class RedScript : MonoBehaviour
         //NOTE: board will be null if we add BlinkyScript to our script order of execution under project settings
         randomizer = new System.Random();
         anim = GetComponent<Animator>();
+        gameManager = GameObject.FindObjectOfType<GameManager>();
+        ChaseTime = StoreValues.ChaseTime;
+        timer = ChaseTime;
+        chasing = true;
+        reached = false;
+        Debug.Log("chaseTime: " + ChaseTime.ToString());
         Player = GameObject.FindWithTag("Player");
         PacManAttributes = GameObject.FindWithTag("Player").GetComponent<PacManScript>();
         transform.position = StartNode.transform.position; //this should fix things up
@@ -49,7 +60,21 @@ public class RedScript : MonoBehaviour
             FrightMode();
         }
         else {
-            NormalMode();
+            timer -= Time.deltaTime;
+            //Debug.Log("Time: " + timer.ToString());
+            if (chasing == true && timer < 0) {
+                Debug.Log("Scattering");
+                SetScatter();
+                chasing = false;
+                timer = 10000; //this doesn't matter
+            }
+            else if (chasing == false) {
+                ScatterMode(); //BFS
+            }
+            else { //once we are done with scatter, we can set chasing to be true.
+                timer = ChaseTime; //reset timer
+                NormalMode();
+            }
         }
         transform.position += (Vector3)(direction * speed * Time.deltaTime);
     }
@@ -399,9 +424,48 @@ public class RedScript : MonoBehaviour
                 break;
         }
     }
-    //each ghost goes to their respective corners
-    void Scatter() {
+    
+    void SetScatter() {
         Path = BreadthFirstSearch(CornerNode, TargetNode);
+    }
+    //each ghost goes to their respective corners
+    void ScatterMode() {
+        if (Path.Count != 0 && OverShotTarget()) {
+                Path.Pop();
+                if (TargetNode == null) {
+                    Debug.Log("[NORMALMODE BEHAVIOR 0] TargetNode is null ");
+                }
+                else {
+                CurrentNode = TargetNode;
+                if (CurrentNode == LeftTeleport || CurrentNode == RightTeleport) {
+                    Teleport(CurrentNode);
+                }
+                if (Path.Count != 0) {
+                    TargetNode = Path.Peek();
+                    direction = (TargetNode.transform.position - CurrentNode.transform.position).normalized;
+                    UpdateAnimation(direction);
+                }
+                else if (Path.Count == 0) {
+                    if (behavior == 0 || behavior == 1) {
+                        NodeIntersectionScript GoalNode = PacManAttributes.CurrentNode;
+                        if (GoalNode == null) {
+                            GoalNode = HomeNode;
+                        }
+                        chasing = true;
+                        SelectRandomTargetNode();
+                        Path = BreadthFirstSearch(GoalNode, TargetNode);
+                        Debug.Log("done scattering");
+                        return;
+                    }
+                    else {
+                        chasing = true;
+                        SelectRandomTargetNode();
+                        Debug.Log("done scattering");
+                        return;
+                    }
+                }
+                }
+        }
     }
 
     string LogOutPut(Vector2 vector) {
