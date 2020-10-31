@@ -307,7 +307,7 @@ public class PacManScript : MonoBehaviour
         anim.SetBool("DeathTrigger", false);
         GetComponent<SpriteRenderer>().enabled = false;
         GetComponent<Collider2D>().enabled = false;
-        if (lives == 0) {
+        if (lives <= 0) {
             GameOver();
         }
         Invoke("Respawn", 1.5f);

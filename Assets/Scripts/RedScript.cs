@@ -447,7 +447,10 @@ public class RedScript : MonoBehaviour
                 }
                 else if (Path.Count == 0) {
                     if (behavior == 0 || behavior == 1) {
-                        NodeIntersectionScript GoalNode = PacManAttributes.CurrentNode;
+                        NodeIntersectionScript GoalNode = PacManAttributes.TargetNode;
+                        if (GoalNode == null) {
+                            GoalNode = PacManAttributes.CurrentNode;
+                        }
                         if (GoalNode == null) {
                             GoalNode = HomeNode;
                         }
