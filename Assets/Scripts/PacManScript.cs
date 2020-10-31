@@ -13,12 +13,12 @@ using UnityEngine.SceneManagement;
 
 //the issue is that we need to SELECT/SET A DIRECTION SUCH THAT:
 //Until we reach TargetNode or reverse, we cannot do any other directions.
-//Currently, our direction is just influenced by our stupid node.
+//Currently, our direction is just influenced by our node.
 
 public class PacManScript : MonoBehaviour
 {
     //We want to keep track of CurrentNode, TargetNode, and PreviousNode.
-    //public GUISkin skin;
+    //public GUISkin skin; //this thing crashed my unity ):
     public float speed = 4.0f;
     private Vector2 direction;
     private Vector2 oppositeDirection;
@@ -41,9 +41,6 @@ public class PacManScript : MonoBehaviour
     public GameObject GameOverObject;
     void Start()
     {
-        //skin = Resources.Load<GUISkin>("Fonts/EmulogicGUISkin");
-        //GUI.skin = skin;
-        //GUILayout.Button ("I am a re-Skinned Button");
         gameManager = GameObject.FindObjectOfType<GameManager>();
         if (StoreValues.level < 5) {
             lives = 3;

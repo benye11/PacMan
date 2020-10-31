@@ -59165,7 +59165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c91c0e2eccf644c3d9fcacc798c63821, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 8
+  speed: 5
   StartNode: {fileID: 1767023383}
   CurrentNode: {fileID: 0}
   TargetNode: {fileID: 0}
