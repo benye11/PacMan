@@ -16,7 +16,7 @@ public class NodePointsScript : MonoBehaviour
     //NOTE: For this to work, you need BOTH circle collider and rigibody2D on pacman.
     void OnTriggerEnter2D(Collider2D other) {
         if (other.gameObject.name == "PacMan") {
-            Player.SendMessage("ScorePoints", points);
+            Player.SendMessage("PelletsScorePoints", points);
             GetComponent<SpriteRenderer>().enabled = false;
             GetComponent<Collider2D>().enabled = false;
             points = 0;

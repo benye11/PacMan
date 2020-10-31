@@ -223,7 +223,7 @@ public class RedScript : MonoBehaviour
             Player.SendMessage("TriggerDeath");
             }
             else if (Fright == true) {
-                Player.SendMessage("ScorePoints", 100);
+                Player.SendMessage("OtherScorePoints", 100);
                 GetComponent<Collider2D>().enabled = false;
                 anim.SetBool("Eaten", true);
             }

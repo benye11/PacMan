@@ -28,18 +28,24 @@ public class PacManScript : MonoBehaviour
     private Vector2 nextDirection; //you can make input directions in advance.
     private string oppositeDirectionOutput;
     private int score;
-    public Text ScoreBoard;
+    private int highscore;
+    public Text HighScore;
+    public Text CurrentScore;
     public Animator anim;
     private NodeIntersectionScript LeftTeleport;
     private NodeIntersectionScript RightTeleport;
+    private int pelletcount;
     void Start()
     {
         //skin = Resources.Load<GUISkin>("Fonts/EmulogicGUISkin");
         //GUI.skin = skin;
         //GUILayout.Button ("I am a re-Skinned Button");
         anim = GetComponent<Animator>();
-        ScoreBoard.text = "Score: 0";
+        pelletcount = 0;
+        HighScore.text = "High Score" + "\n" + "0";
+        CurrentScore.text = "Current Score" + "\n" + "0";
         score = 0;
+        highscore = 0;
         direction = Vector2.zero;
         oppositeDirection = Vector2.zero;
         LeftTeleport = GameObject.Find("pellet_left_teleport").GetComponent<NodeIntersectionScript>();
@@ -135,9 +141,27 @@ public class PacManScript : MonoBehaviour
         transform.position += (Vector3)(direction * speed * Time.deltaTime);
     }
 
-    void ScorePoints(int points) {
+    void PelletsScorePoints(int points) {
         score += points;
-        ScoreBoard.text = "Score: " + score;
+        if (score > highscore) {
+            highscore = score;
+            HighScore.text = "High Score" + "\n" + score.ToString();
+        }
+        CurrentScore.text = "Current Score" + "\n" + score.ToString();
+        pelletcount += 1;
+        //Debug.Log("pelletcount: " + pelletcount.ToString()); //we have 233 pellets.
+        if (pelletcount >= 233) {
+
+        }
+    }
+
+    void OtherScorePoints(int points) {
+        score += points;
+        if (score > highscore) {
+            highscore = score;
+            HighScore.text = "High Score" + "\n" + score.ToString();
+        }
+        CurrentScore.text = "Current Score" + "\n" + score.ToString();
     }
 
     void Move() {
